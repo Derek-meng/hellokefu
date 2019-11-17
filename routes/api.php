@@ -28,29 +28,29 @@ Route::post('register', 'Api\AuthController@register')->name('admin.register');
 Route::post('visitor/store', 'Api\VisitorController@store');
 
 // 访客聊天内容
-Route::get('visitor/messages','Api\ChatController@visitorMessage');
+Route::get('visitor/messages', 'Api\ChatController@visitorMessage');
 
 // 需要登录的路由组
 Route::group([
-    'middleware'    => [
+    'middleware' => [
         'jwt.auth',
     ]
 
-],function (){
+], function () {
 
     // 退出
     Route::delete('logout', 'Api\AuthController@logout');
     Route::get('profile', 'Api\AuthController@profile');
 
     // 客服
-    Route::apiResource('admin','Api\AdminController');
+    Route::apiResource('admin', 'Api\AdminController');
 
     // 访客
-    Route::apiResource('visitor','Api\VisitorController');
+    Route::apiResource('visitor', 'Api\VisitorController');
 
     // 客服聊天内容
-    Route::get('service/messages','Api\ChatController@serviceMessage');
+    Route::get('service/messages', 'Api\ChatController@serviceMessage');
 
     // 应用
-    Route::get('application','Api\ApplicationController@show');
+    Route::get('application', 'Api\ApplicationController@show');
 });
