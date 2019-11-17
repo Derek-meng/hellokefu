@@ -1,5 +1,5 @@
 
-<p align="center"><img src="https://raw.githubusercontent.com/zph123/hellokefu/master/public/logo.png" height="150" width="150"></p>
+<p align="center"><img src="https://github.com/dbing/hellokefu/raw/master/public/logo.png" height="150" width="150"></p>
 
 # Hello chat
 

@@ -28,20 +28,24 @@
     </div>
 </template>
 <script>
-    import { chat, message } from '../api/client'
+    import { store, message } from '../api/chat'
     import { visitor } from '../utils/auth'
     export default {
         data(){
             return {
-                ws: null,
                 content: '',
                 loading: true,
                 vid: false,
                 params: {
                     app_uuid: '',
                 },
-                visitor: {},
-                messages: []
+                visitor: {}
+            }
+        },
+        computed: {
+            messages () {
+                console.log('--');
+                return this.$store.state.socket.message
             }
         },
         created() {
@@ -54,53 +58,31 @@
         },
         methods: {
             init () {
-                this.ws = new WebSocket("ws://47.105.138.9:9502");
-                this.ws.onopen = this.webSocketOpen
-                this.ws.onmessage = this.webSocketMessage
-                this.ws.onerror = this.webSocketError
-                this.ws.onclose = this.webSocketClose
 
                 // 分配客服
-                chat(this.params).then(ret => {
+                store(this.params).then(ret => {
                     visitor(ret.data.visitor_id)
                     this.visitor = ret.data
                 }).catch()
 
                 if (this.vid){
                     // 聊天内容
-                    message(this.params).then(ret => {
-                        console.log(ret)
-                        this.messages = ret.data.reverse()
-                    }).catch()
+                    this.$store.dispatch('getMessages')
                 }
                 this.loading = false
             },
-            webSocketOpen(){
-                // 建立链接
-                let actions = {body:{},params: this.params,event:'connect',type:'chat'};
-                this.ws.send(JSON.stringify(actions));
-            },
-            webSocketMessage(evt){
-                let receivedData = evt.data;
-                console.log('receivedData...',receivedData)
-                this.messages.push(JSON.parse(receivedData))
-            },
-            webSocketError(){
-            },
-            webSocketClose(){
-                alert('close')
-            },
             onKeyup (e) {
                 if (e.keyCode === 13 && this.content.length) {
-                    console.log(this.content)
                     // 发送消息
                     let actions = {body: {content: this.content},params: this.params,event:'send',type:'chat'};
-                    this.ws.send(JSON.stringify(actions))
+
+//                    this.$socket.send('some data')
+                    // or with {format: 'json'} enabled
+                    this.$socket.sendObj(actions)
 
                     // 发送消息后滚动到底部
                     let box = document.getElementById('message-box');
                     box.scrollTop = parseInt(box.scrollHeight) - parseInt(box.clientHeight)
-                    console.log('sending...',actions)
                     this.content = '';
                 }
             }

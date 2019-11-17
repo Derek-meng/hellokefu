@@ -189,7 +189,7 @@
             width: 380px;
             max-width: 100%;
             padding: 100px 45px 40px;
-            margin: 200px auto;
+            margin: 80px auto;
             overflow: hidden;
             -webkit-box-shadow: 0 0 60px #ddd;
             box-shadow: 0 0 60px #ddd;

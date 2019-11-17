@@ -25,17 +25,6 @@ class VisitorController extends ApiController
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
      *
      * @param Visitor $visitor
      * @return \Illuminate\Http\JsonResponse
@@ -69,36 +58,36 @@ class VisitorController extends ApiController
     }
 
     /**
-     * 访客信息
+     * 创建访客并分配客服
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function mine(VisitorRequest $request)
+    public function store(VisitorRequest $request)
     {
         try {
             $appUuid = $request->input('app_uuid', null);
             $visitorId = $request->input('vid', null);
 
             $visitor = Visitor::where(['visitor_id' => $visitorId, 'app_uuid' => $appUuid])->first();
-            if ($visitor){
+            if ($visitor) {
                 // 更新访问次数
                 $visitor->visit_number += 1;
                 $visitor->save();
             }
 
-            if (is_null($visitor)){
+            if (is_null($visitor)) {
                 $app = Application::where(['app_uuid' => $appUuid])->first();
                 // 直接分配给管理员-暂时这么写
                 $admin = UserService::getAdminByAppId($app->id);
 
                 $visitor = Visitor::create([
                     'visitor_id' => (string)Uuid::generate(),
-                    'avatar'    => UserService::generateAvatar(),
+                    'avatar' => UserService::generateAvatar(),
                     'user_id' => $admin->id,
                     'app_uuid' => $appUuid,
                     'ip' => $request->getClientIp(),
                     'user_agent' => 'user_agent',
-                    'name'  => '访客 '.(Visitor::where(['app_uuid'=>$app->app_uuid])->count() + 1)
+                    'name' => '访客 ' . (Visitor::where(['app_uuid' => $app->app_uuid])->count() + 1)
                 ]);
             }
 

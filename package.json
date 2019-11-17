@@ -27,5 +27,9 @@
     "vue-loader": "^13.3.0",
     "vue-router": "^3.1.3",
     "vuex": "^3.1.1"
+  },
+  "dependencies": {
+    "vue-native-websocket": "^2.0.13",
+    "vuex-router-sync": "^5.0.0"
   }
 }

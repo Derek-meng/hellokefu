@@ -76,7 +76,7 @@ class ChatWebSocket extends Command
         $this->server->on('message', function($server, $frame) {
             echo "received message: {$frame->data} opcode: {$frame->opcode}\n";
             $data = json_decode($frame->data,true);
-
+dump($data);
             // 访客消息
             if(isset($data['event']) && isset($data['type']) && $data['type'] == self::CHAT_EVENT_TYPE){
                 $event = $data['event'];

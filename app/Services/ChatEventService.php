@@ -52,6 +52,7 @@ class ChatEventService extends EventService
      */
     public function connect()
     {
+        echo 'chat connect vid:' . $this->params['vid'] . '  fd:' . $this->fd;
         return $this->redis->visitorFd($this->params['vid'], $this->fd);
     }
 
@@ -71,12 +72,12 @@ class ChatEventService extends EventService
                 'content' => $this->body['content']
             ]);
             // 发给自己
-            dump('#visitorFd--->',$this->fd);
-            $this->server->push($this->fd,json_encode(new ChatResource($chat)));
+            dump('#visitorFd--->', $this->fd);
+            $this->server->push($this->fd, json_encode(new ChatResource($chat)));
 
             // 发给客服
             $userFd = $this->redis->userFd($userId);
-            dump('#userFd--->',$userFd);
+            dump('#userFd--->', $userFd);
             $this->server->push($userFd, json_encode(new ChatResource($chat)));
 
         } catch (ApiException $e) {

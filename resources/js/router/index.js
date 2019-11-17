@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Chat from '../pages/chat/chat.vue'
 import Client from '../pages/client/index.vue'
 import Layout from '../layout/index.vue'
 import Login from '../pages/auth/login.vue'
@@ -22,12 +21,6 @@ const routes = [
         meta: { title: '注册', icon: '' }
     },
     {
-        path: '/chat',
-        name: 'Chat',
-        component: Chat,
-        meta: { title: '咨询', icon: '' }
-    },
-    {
         path: '/client',
         name: 'Client',
         component: Client,
@@ -44,11 +37,6 @@ const routes = [
             meta: { title: '面板', icon: '' },
             // component: () => import('../pages/home/Home.vue')
             component: Vue.component('panel', require('../pages/home/home.vue').default),
-        },{
-            path: 'conversation',
-            name: 'conversation',
-            meta: { title: '会话', icon: '' },
-            component: Vue.component('conversation', require('../pages/conversation/conversation.vue').default),
         },{
             path: 'service',
             name: 'service',

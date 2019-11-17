@@ -23,7 +23,7 @@ class UserEventService extends EventService
     protected $userId;
 
 
-    public function init($server,$frame)
+    public function init($server, $frame)
     {
         $this->server = $server;
         $this->fd = $frame->fd;
@@ -41,6 +41,7 @@ class UserEventService extends EventService
      */
     public function connect()
     {
+        echo 'use connect userId:' . $this->userId . '  fd:' . $this->fd;
         return $this->redis->userFd($this->userId, $this->fd);
     }
 
@@ -51,7 +52,7 @@ class UserEventService extends EventService
     {
         // 入表
         $visitorId = $this->params['vid'];
-        dump('#visitorFd--->',$visitorId);
+        dump('#visitorFd--->', $visitorId);
 
         $chat = Chat::create([
             'visitor_id' => $visitorId,
@@ -60,11 +61,11 @@ class UserEventService extends EventService
             'content' => $this->body['content']
         ]);
         // 通知自己
-        $this->server->push($this->fd,json_encode(new ChatResource($chat)));
+        $this->server->push($this->fd, json_encode(new ChatResource($chat)));
 
         // 通知访客
         $visitorFd = $this->redis->visitorFd($visitorId);
-        $this->server->push($visitorFd,json_encode(new ChatResource($chat)));
+        $this->server->push($visitorFd, json_encode(new ChatResource($chat)));
 
     }
 }

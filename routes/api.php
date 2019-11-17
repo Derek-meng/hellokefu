@@ -24,8 +24,8 @@ Route::post('login', 'Api\AuthController@login')->name('admin.login');
 // 注册
 Route::post('register', 'Api\AuthController@register')->name('admin.register');
 
-// 访客咨询
-Route::post('visit', 'Api\VisitorController@mine');
+// 创建访客
+Route::post('visitor/store', 'Api\VisitorController@store');
 
 // 访客聊天内容
 Route::get('visitor/messages','Api\ChatController@visitorMessage');
@@ -50,7 +50,6 @@ Route::group([
 
     // 客服聊天内容
     Route::get('service/messages','Api\ChatController@serviceMessage');
-
 
     // 应用
     Route::get('application','Api\ApplicationController@show');

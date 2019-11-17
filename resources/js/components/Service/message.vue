@@ -23,14 +23,11 @@
 </template>
 <script>
     import { getToken } from '../../utils/auth'
-    import { messages } from '../../api/service'
     export default {
         data(){
             return {
-                ws: null,
                 vid: false,
-                content: '',
-                messages: [],
+                content: ''
             }
         },
         filters: {
@@ -42,6 +39,12 @@
                 return date.getHours() + ':' + date.getMinutes();
             }
         },
+        computed: {
+            messages () {
+                console.log('--');
+                return this.$store.state.socket.message
+            }
+        },
         created (){
             this.vid = this.$route.query.vid
             this.init()
@@ -50,48 +53,23 @@
             '$route'(to, from) {
                 this.vid = to.query.vid
                 if (this.vid){
-                    messages({vid: this.vid}).then(ret => {
-                        console.log(ret)
-                        this.messages = ret.data.reverse()
-                    }).catch()
+                    // 获取聊天记录
+                    this.$store.dispatch('getMessages')
                 }
             }
         },
         methods: {
             init () {
-                this.ws = new WebSocket("ws://47.105.138.9:9502");
-                console.log('connect...',this.ws)
-                this.ws.onopen = this.webSocketOpen
-                this.ws.onmessage = this.webSocketMessage
-                this.ws.onerror = this.webSocketError
-                this.ws.onclose = this.webSocketClose
                 if (this.vid){
-                    messages({vid: this.vid}).then(ret => {
-                        console.log(ret)
-                        this.messages = ret.data.reverse()
-                    }).catch()
+                    this.$store.dispatch('getMessages')
                 }
-            },
-            webSocketOpen(){
-                // 建立链接
-                let actions = {body:{},params: {vid: this.vid,token: getToken()},event:'connect',type:'user'};
-                this.ws.send(JSON.stringify(actions));
-            },
-            webSocketMessage(evt){
-                let receivedData = evt.data;
-                console.log('---receivedData---',receivedData)
-                this.messages.push(JSON.parse(receivedData))
-            },
-            webSocketError(){
-            },
-            webSocketClose(){
-                alert('close');
             },
             onKeyup (e) {
                 if (e.keyCode === 13 && this.content.length) {
                     // 发送消息
                     let actions = {body: {content: this.content},params: {vid: this.vid, token: getToken()},event:'send',type:'user'};
-                    this.ws.send(JSON.stringify(actions))
+//                    this.ws.send(JSON.stringify(actions))
+                    this.$socket.sendObj(actions)
                     this.content = '';
                 }
             }

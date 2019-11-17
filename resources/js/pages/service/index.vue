@@ -8,12 +8,12 @@
                     <div id="container">
                         <el-row>
                             <!--访客列表-->
-                            <el-col :span="6">
+                            <el-col :span="7">
                                 <list></list>
                             </el-col>
 
                             <!--聊天记录-->
-                            <el-col :span="18">
+                            <el-col :span="17">
                                 <div class="main">
                                     <message v-if="show"></message>
                                 </div>
