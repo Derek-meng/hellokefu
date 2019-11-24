@@ -9,7 +9,8 @@
                         <span>{{ item.created_at | time }}</span>
                     </p>
                     <div class="main" :class="{ self: item.agent === 'user'}">
-                        <img class="avatar" width="30" height="30" :src="item.agent === 'user' ? item.user.avatar : item.visitor.avatar" />
+                        <img class="avatar" width="30" height="30"
+                             :src="item.agent === 'user' ? item.user.avatar : item.visitor.avatar"/>
                         <div class="text">{{ item.content }}</div>
                     </div>
                 </li>
@@ -22,17 +23,15 @@
     </div>
 </template>
 <script>
-    import { getToken } from '../../utils/auth'
     export default {
-        data(){
+        data() {
             return {
-                vid: false,
                 content: ''
             }
         },
         filters: {
             // 将日期过滤为 hour:minutes
-            time (date) {
+            time(date) {
                 if (typeof date === 'string') {
                     date = new Date(date);
                 }
@@ -40,36 +39,27 @@
             }
         },
         computed: {
-            messages () {
-                console.log('--');
+            messages() {
                 return this.$store.state.socket.message
             }
         },
-        created (){
-            this.vid = this.$route.query.vid
+        created() {
             this.init()
         },
         watch: {
             '$route'(to, from) {
-                this.vid = to.query.vid
-                if (this.vid){
-                    // 获取聊天记录
-                    this.$store.dispatch('getMessages')
-                }
+                // 获取聊天记录
+                this.$store.dispatch('getMessages')
             }
         },
         methods: {
-            init () {
-                if (this.vid){
-                    this.$store.dispatch('getMessages')
-                }
+            init() {
+                this.$store.dispatch('getMessages')
             },
-            onKeyup (e) {
+            onKeyup(e) {
                 if (e.keyCode === 13 && this.content.length) {
                     // 发送消息
-                    let actions = {body: {content: this.content},params: {vid: this.vid, token: getToken()},event:'send',type:'user'};
-//                    this.ws.send(JSON.stringify(actions))
-                    this.$socket.sendObj(actions)
+                    this.$store.dispatch('userSendMessage', this.content)
                     this.content = '';
                 }
             }
@@ -77,18 +67,18 @@
     };
 </script>
 <style lang="less" scoped>
-    .main-content{
+    .main-content {
         .message {
             padding: 10px 15px;
             /*overflow-y: scroll;*/
-            overflow:auto;
+            overflow: auto;
             border: solid 1px #EBEBEB;
             height: 600px;
             /*height: ~'calc(100% - 860px)';*/
             li {
                 margin-bottom: 15px;
             }
-            .header{
+            .header {
                 text-align: center;
                 background-color: #F3F3F3;
                 height: 40px;
@@ -156,7 +146,7 @@
             }
         }
         /* 聊天 */
-        .talk-text{
+        .talk-text {
             /*position: absolute;*/
             width: 100%;
             bottom: 0;

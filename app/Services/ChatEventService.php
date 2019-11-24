@@ -11,7 +11,11 @@ namespace App\Services;
 
 use App\Exceptions\ApiException;
 use App\Http\Resources\ChatResource;
+use App\Http\Resources\VisitorResource;
+use App\Models\Application;
 use App\Models\Chat;
+use App\Models\Visitor;
+use Webpatser\Uuid\Uuid;
 
 class ChatEventService extends EventService
 {
@@ -21,6 +25,11 @@ class ChatEventService extends EventService
     protected $data;
     protected $body;
     protected $params;
+
+    /**
+     * 设置在线访客事件
+     */
+    const SET_VISITOR = 'storeVisitor';
 
     public function init($server, $frame)
     {
@@ -52,8 +61,39 @@ class ChatEventService extends EventService
      */
     public function connect()
     {
-        echo 'chat connect vid:' . $this->params['vid'] . '  fd:' . $this->fd;
-        return $this->redis->visitorFd($this->params['vid'], $this->fd);
+        $appUuid = $this->params['app_uuid'] ?? null;
+        $visitorId = $this->params['vid'] ?? null;
+        dump('$visitorId=', $visitorId);
+        // 客户端首次链接
+        if (empty($visitorId)) {
+            if ($visitor = Visitor::where(['visitor_id' => $visitorId, 'app_uuid' => $appUuid])->first()) {
+                // 更新访问次数
+                $visitor->visit_number += 1;
+                $visitor->save();
+            }
+            // 不存在访客信息-分配客服
+            if (empty($visitor)) {
+                $app = Application::where(['app_uuid' => $appUuid])->first();
+                // 直接分配给管理员-暂时这么写
+                $admin = UserService::getAdminByAppId($app->id);
+
+                $visitor = Visitor::create([
+                    'visitor_id' => (string)Uuid::generate(),
+                    'avatar' => UserService::generateAvatar(),
+                    'user_id' => $admin->id,
+                    'app_uuid' => $appUuid,
+                    'ip' => '127.0.0.1',
+                    'user_agent' => 'user agent',
+                    'name' => '访客 ' . (Visitor::where(['app_uuid' => $app->app_uuid])->count() + 1)
+                ]);
+            }
+            $this->server->push($this->fd, $this->packMessage(self::SET_VISITOR, new VisitorResource($visitor)));
+            return $this->redis->visitorFd($visitor->visitor_id, $this->fd);
+
+        } else {
+            echo 'chat connect vid:' . $this->params['vid'] . '  fd:' . $this->fd;
+            return $this->redis->visitorFd($this->params['vid'], $this->fd);
+        }
     }
 
     /**

@@ -58,7 +58,7 @@ class VisitorController extends ApiController
     }
 
     /**
-     * 创建访客并分配客服
+     * 创建访客并分配客服-
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -68,8 +68,7 @@ class VisitorController extends ApiController
             $appUuid = $request->input('app_uuid', null);
             $visitorId = $request->input('vid', null);
 
-            $visitor = Visitor::where(['visitor_id' => $visitorId, 'app_uuid' => $appUuid])->first();
-            if ($visitor) {
+            if ($visitor = Visitor::where(['visitor_id' => $visitorId, 'app_uuid' => $appUuid])->first()) {
                 // 更新访问次数
                 $visitor->visit_number += 1;
                 $visitor->save();

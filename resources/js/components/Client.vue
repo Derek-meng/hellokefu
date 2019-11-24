@@ -1,7 +1,7 @@
 <template>
     <div class="chat-box">
         <div class="header">
-            <img class="avatar" width="30" height="30" src="/images/user1.png" />
+            <img class="avatar" width="30" height="30" src="/images/user1.png"/>
             <span>管理员</span>
         </div>
         <div class="message" id="message-box">
@@ -12,7 +12,8 @@
                             <span>{{ item.created_at | time }}</span>
                         </p>
                         <div class="main" :class="{ self: item.agent === 'visitor' }">
-                            <img class="avatar" width="30" height="30" :src="item.agent === 'visitor' ? item.visitor.avatar : item.user.avatar" />
+                            <img class="avatar" width="30" height="30"
+                                 :src="item.agent === 'visitor' ? item.visitor.avatar : item.user.avatar"/>
                             <div class="text">{{ item.content }}</div>
                         </div>
                     </li>
@@ -28,57 +29,31 @@
     </div>
 </template>
 <script>
-    import { store, message } from '../api/chat'
-    import { visitor } from '../utils/auth'
     export default {
-        data(){
+        data() {
             return {
                 content: '',
-                loading: true,
-                vid: false,
-                params: {
-                    app_uuid: '',
-                },
-                visitor: {}
+                loading: true
             }
         },
         computed: {
-            messages () {
-                console.log('--');
+            messages() {
                 return this.$store.state.socket.message
             }
         },
         created() {
-            this.params.app_uuid = this.$route.query.app_uuid;
-            this.vid = visitor()
-            if(this.vid){
-                this.params.vid = this.vid
-            }
             this.init()
         },
         methods: {
-            init () {
-
-                // 分配客服
-                store(this.params).then(ret => {
-                    visitor(ret.data.visitor_id)
-                    this.visitor = ret.data
-                }).catch()
-
-                if (this.vid){
-                    // 聊天内容
-                    this.$store.dispatch('getMessages')
-                }
+            init() {
+                // 聊天内容
+                this.$store.dispatch('getMessages')
                 this.loading = false
             },
-            onKeyup (e) {
+            onKeyup(e) {
                 if (e.keyCode === 13 && this.content.length) {
                     // 发送消息
-                    let actions = {body: {content: this.content},params: this.params,event:'send',type:'chat'};
-
-//                    this.$socket.send('some data')
-                    // or with {format: 'json'} enabled
-                    this.$socket.sendObj(actions)
+                    this.$store.dispatch('clientSendMessage', this.content)
 
                     // 发送消息后滚动到底部
                     let box = document.getElementById('message-box');
@@ -89,7 +64,7 @@
         },
         filters: {
             // 将日期过滤为 hour:minutes
-            time (date) {
+            time(date) {
                 if (typeof date === 'string') {
                     date = new Date(date);
                 }
@@ -99,10 +74,10 @@
     };
 </script>
 <style lang="less" scoped>
-    .chat-box{
+    .chat-box {
         .header {
             text-align: left;
-            color:#fff;
+            color: #fff;
             background-color: #0066A9;
             height: 50px;
             line-height: 50px;
@@ -116,7 +91,7 @@
                 line-height: 40px;
             }
         }
-        .footer{
+        .footer {
             text-align: center;
             /*position: absolute;*/
             color: #D7D7D7;
@@ -129,13 +104,12 @@
         }
         .message {
             /*overflow-y: scroll;*/
-            overflow:auto;
+            overflow: auto;
             height: 350px;
-            border:  solid 1px #EBEBEB;
+            border: solid 1px #EBEBEB;
             li {
                 margin-bottom: 15px;
             }
-
 
             .message-container {
                 padding: 10px 15px;

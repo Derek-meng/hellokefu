@@ -1,8 +1,9 @@
 <template>
     <div class="list">
         <ul>
-            <li v-for="item in list" :class="{ active: item.visitor_id === active }" @click="selectHandle(item.visitor_id)">
-                <img class="avatar"  width="30" height="30" :alt="item.name" :src="item.avatar">
+            <li v-for="item in activeChat" :class="{ active: item.visitor_id === active }"
+                @click="selectHandle(item.visitor_id)">
+                <img class="avatar" width="30" height="30" :alt="item.name" :src="item.avatar">
                 <p class="name">{{item.name}}</p>
                 <span class="time">{{item.lasted_at}}</span>
             </li>
@@ -10,46 +11,47 @@
     </div>
 </template>
 <script>
+    import {mapGetters} from 'vuex'
 
-    import { indexVisit } from '../../api/visit'
     export default {
-        data(){
+        data() {
             return {
-                meta: {
-                    size: 5,
-                    updated_at: 'DESC'
-                },
-                active: '',
-                list: [],
+                active: ''
             }
+        }
+        ,
+        computed: {
+            ...mapGetters(['activeChat'])
         },
-        created(){
+        created() {
             this.active = this.$route.query.vid
-            this.getLastVisitor()
-        },
+            this.init()
+        }
+        ,
         watch: {
             '$route'(to, from) {
                 this.active = to.query.vid
             }
-        },
+        }
+        ,
         methods: {
             // 访客列表
-            getLastVisitor(){
-                indexVisit(this.meta).then(ret => {
-                    this.list = ret.data
-                }).catch()
-            },
+            init() {
+                this.$store.dispatch('getActiveChat')
+            }
+            ,
             // 查看选中
-            selectHandle(vid){
-                this.$router.push({ path: '/service', query: { vid: vid }})
+            selectHandle(vid) {
+                this.$router.push({path: '/service', query: {vid: vid}})
             }
         }
-    };
+    }
+    ;
 </script>
 <style scoped lang="less">
     .list {
         height: 600px;
-        border:  solid 1px #EBEBEB;
+        border: solid 1px #EBEBEB;
 
         li {
             padding: 12px 15px;

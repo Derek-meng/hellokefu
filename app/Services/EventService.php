@@ -13,8 +13,14 @@ class EventService
 {
     protected $redis;
 
+
     public function __construct(RedisService $redis)
     {
         $this->redis = $redis;
+    }
+
+    public function packMessage($event, $data)
+    {
+        return json_encode(['action' => $event, 'data' => $data]);
     }
 }

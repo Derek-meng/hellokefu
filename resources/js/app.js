@@ -33,6 +33,26 @@ Vue.use(VueNativeSock, 'ws://127.0.0.1:9502', {
     reconnectionAttempts: 5,    // (Number) number of reconnection attempts before giving up (Infinity),
     reconnectionDelay: 3000,    // (Number) how long to initially wait before attempting a new (1000)
     // protocol: 'my-protocol'
+    passToStoreHandler: function (eventName, event) {
+        console.log('eventName',eventName)
+        if (!eventName.startsWith('SOCKET_')) { return }
+        let method = 'commit'
+        let target = eventName.toUpperCase()
+        let msg = event
+        if (this.format === 'json' && event.data) {
+            msg = JSON.parse(event.data)
+            if (msg.mutation) {
+                target = [msg.namespace || '', msg.mutation].filter((e) => !!e).join('/')
+            } else if (msg.action) {
+                method = 'dispatch'
+                target = [msg.namespace || '', msg.action].filter((e) => !!e).join('/')
+            }
+        }
+        console.log('--- eventName ---')
+        console.log(method,target,msg)
+        console.log('=== eventName ===')
+        this.store[method](target, msg)
+    }
 })
 
 const app = new Vue({

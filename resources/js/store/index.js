@@ -1,8 +1,9 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import {getToken, setToken, destroyToken, visitor} from '../utils/auth'
+import {getToken, setToken, destroyToken, setVisitorId, getVisitorId} from '../utils/auth'
 import {profile} from "../api/auth"
 import {servicerMessages, visitorMessages} from '../api/chat'
+import {indexVisit} from '../api/visit'
 
 Vue.use(Vuex);
 
@@ -13,42 +14,47 @@ const state = {
         reconnectError: false,
     },
     token: getToken(),
-    // clientMessage: [],
-    // serviceMessage: [],
+    activeChat: [],     // 活跃访客在线列表
+    visitor: null,      // 访客
     name: "",
     avatar: ""
 };
 
 const getters = {
-    token() {
-        return state.token;
+    // token() {
+    //     return state.token;
+    // },
+    token: state => {
+        return state.token
+    },
+    activeChat: state => {
+        return state.activeChat
     }
-    // avatar: state => state.user.avatar,
 };
 
 const mutations = {
     SOCKET_ONOPEN(state, event) {
-        console.log('---start onpen----')
-        // current path (string)
-        // current params
-        console.log(store.state.route.query)
-        // current query (object)
+        console.log('---START SOCKET_ONOPEN----')
+        // console.log(store.state.route.query)
         // console.log(store.state.route.path)
         // console.log(store.state.route.params)
-        // Vue.prototype.$socket = event.currentTarget
+        Vue.prototype.$socket = event.currentTarget
         state.socket.isConnected = true
-        // connect
-        if (store.state.route.path !== '/client') {
-            var actions = {body: {}, params: {token: getToken()}, event: 'connect', type: 'user'};
-        } else {
+        // 访客端连接
+        if (store.state.route.path === '/client') {
             let appUuid = store.state.route.query.app_uuid;
-            console.log('uuid', appUuid);
-            var actions = {body: {}, params: {app_uuid: appUuid, vid: visitor()}, event: 'connect', type: 'chat'};
+            // 访客连接 WS
+            Vue.prototype.$socket.sendObj({
+                body: {},
+                params: {app_uuid: appUuid, vid: getVisitorId()},
+                event: 'connect',
+                type: 'chat'
+            })
+        } else {
+            // 客服端连接
+            Vue.prototype.$socket.sendObj({body: {}, params: {token: getToken()}, event: 'connect', type: 'user'})
         }
-
-        // connect
-        Vue.prototype.$socket.sendObj(actions)
-        console.log('---end onopen----')
+        console.log('---END SOCKET_ONOPEN----')
     },
     SOCKET_ONCLOSE(state, event) {
         console.log('SOCKET_ONCLOSE', state, event)
@@ -59,9 +65,8 @@ const mutations = {
     },
     // default handler called for all methods
     SOCKET_ONMESSAGE(state, message) {
-        console.log('-- SOCKET_ONMESSAGE ---')
+        console.log('SOCKET_ONMESSAGE', message)
         // state.socket.message = message
-        console.log(state.socket.message)
         state.socket.message.push(message)
     },
     // mutations for reconnect methods
@@ -73,7 +78,7 @@ const mutations = {
     },
     // 访客消息
     SET_CLIENT_MESSAGE(state, message) {
-        console.info('set client messages', message)
+        console.info('SET_CLIENT_MESSAGE', message)
         state.socket.message = message
     },
     SET_TOKEN: (state, token) => {
@@ -85,42 +90,83 @@ const mutations = {
     },
     SET_AVATAR: (state, avatar) => {
         state.avatar = avatar
+    },
+    // 单个访客上线
+    SET_VISITOR: (state, visitor) => {
+        // 存储本地，并设置上线
+        setVisitorId(visitor.visitor_id)
+        state.visitor = visitor
+        state.activeChat.push(visitor)
+        console.log('====== End SET_VISITOR=======')
+    },
+    // 设置活跃访客
+    SET_ACTIVE_CHAT: (state, chat) => {
+        state.activeChat = chat
     }
 };
 
 const actions = {
-    sendMessage: function (context, message) {
-        Vue.prototype.$socket.send(message)
+    // 访客发送消息
+    clientSendMessage: function (context, message) {
+        let actions = {
+            body: {content: message},
+            params: {app_uuid: store.state.route.query.app_uuid, vid: getVisitorId()},
+            event: 'send',
+            type: 'chat'
+        };
+        Vue.prototype.$socket.sendObj(actions)
+    },
+    // 客服发送消息
+    userSendMessage: function (context, message) {
+        let actions = {
+            body: {content: message},
+            params: {vid: store.state.route.query.vid, token: getToken()},
+            event: 'send',
+            type: 'user'
+        };
+        Vue.prototype.$socket.sendObj(actions)
+    },
+    // 新访客上线
+    storeVisitor: function (context, message) {
+        console.log('SET_VISITOR ==>', message.data)
+        context.commit('SET_VISITOR', message.data)
     },
     // 获取聊天内容
     getMessages: function (context) {
-        console.log('--start get client message ---')
+        console.log('--start get message ---')
         console.log(store.state.route.path)
         if (store.state.route.path === '/client') {
-            console.log('visit messages')
-            // 访客端消息
-            return new Promise((resole, reject) => {
-                visitorMessages({vid: visitor(), app_uuid: store.state.route.query.app_uuid}).then(ret => {
-                    console.log(ret)
-                    const messages = ret.data.reverse()
-                    context.commit('SET_CLIENT_MESSAGE', messages)
-                    console.log('messages', messages)
-                }).catch()
-            })
+            // 访客端获取聊天消息-首次来访不拉取
+            if (getVisitorId()) {
+                return new Promise((resole, reject) => {
+                    visitorMessages({vid: getVisitorId(), app_uuid: store.state.route.query.app_uuid}).then(ret => {
+                        const messages = ret.data.reverse()
+                        context.commit('SET_CLIENT_MESSAGE', messages)
+                    }).catch()
+                })
+            }
         } else {
-            console.log('user messages')
-            // 客服端消息
-            return new Promise((resole, reject) => {
-                servicerMessages({vid: store.state.route.query.vid}).then(ret => {
-                    console.log(ret)
-                    const messages = ret.data.reverse()
-                    context.commit('SET_CLIENT_MESSAGE', messages)
-                    console.log('messages', messages)
-                }).catch()
-            })
+            // 客服端获取聊天消息-不选择会话不拉取
+            if (store.state.route.query.vid) {
+                return new Promise((resole, reject) => {
+                    servicerMessages({vid: store.state.route.query.vid}).then(ret => {
+                        console.log(ret)
+                        const messages = ret.data.reverse()
+                        context.commit('SET_CLIENT_MESSAGE', messages)
+                    }).catch()
+                })
+            }
         }
     },
-    // get user profile
+    // 获取活跃咨询访客
+    getActiveChat: function (context) {
+        let meta = {size: 5, updated_at: 'DESC'}
+        indexVisit(meta).then(ret => {
+            console.log('SET_ACTIVE_CHAT', ret.data)
+            context.commit('SET_ACTIVE_CHAT', ret.data)
+        }).catch()
+    },
+    // 获取客服信息
     profile({commit, state}) {
         return new Promise((resolve, reject) => {
             console.log(state.token)

@@ -24,13 +24,19 @@ export function destroyToken() {
 const visitorUid = 'hello_visitor_uuid'
 
 /**
- * Get or set visitor uuid
+ * get visitor uuid
+ *
+ * @returns {string}
+ */
+export function getVisitorId() {
+    return window.localStorage.getItem(visitorUid) || ''
+}
+
+/**
+ * set visitor uuid
  * @param uuid
  */
-export function visitor(uuid = '') {
-    if (uuid){
-        return window.localStorage.setItem(visitorUid,uuid)
-    }else{
-        return window.localStorage.getItem(visitorUid) || ''
-    }
+export function setVisitorId(uuid = '') {
+    return window.localStorage.setItem(visitorUid,uuid)
 }
+
