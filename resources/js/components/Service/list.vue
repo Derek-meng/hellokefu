@@ -3,7 +3,9 @@
         <ul>
             <li v-for="item in activeChat" :class="{ active: item.visitor_id === active }"
                 @click="selectHandle(item.visitor_id)">
-                <img class="avatar" width="30" height="30" :alt="item.name" :src="item.avatar">
+                <el-badge :value="item.unread" :max="99" :hidden="item.unread === 0" class="item">
+                    <img class="avatar" width="30" height="30" :alt="item.name" :src="item.avatar">
+                </el-badge>
                 <p class="name">{{item.name}}</p>
                 <span class="time">{{item.lasted_at}}</span>
             </li>
@@ -11,17 +13,16 @@
     </div>
 </template>
 <script>
-    import {mapGetters} from 'vuex'
-
     export default {
         data() {
             return {
-                active: ''
+                active: '',
             }
-        }
-        ,
+        },
         computed: {
-            ...mapGetters(['activeChat'])
+            activeChat(){
+                return this.$store.state.activeVisitor
+            }
         },
         created() {
             this.active = this.$route.query.vid

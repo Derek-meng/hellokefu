@@ -23,14 +23,16 @@ class VisitorResource extends JsonResource
             'name'          => $this->name,
             'visit_number'  => $this->visit_number,
             'company'       => $this->company,
-            'lasted_at'     => $this->lasted_at,
+            'lasted_at'     => (string) $this->lasted_at,
             'mobile'        => $this->mobile,
             'email'         => $this->email,
             'remark'        => $this->remark,
+            'unread'        => $this->unread,
             'created_at'    => (string) $this->created_at,
             'updated_at'    => (string) $this->updated_at,
             'address'       => $this->address,
-            'service'       => $this->user
+            'service'       => $this->user,
+            'messages'      => [],
         ];
     }
 }

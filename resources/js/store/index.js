@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import {getToken, setToken, destroyToken, setVisitorId, getVisitorId} from '../utils/auth'
+import {voice} from '../utils/help'
 import {profile} from "../api/auth"
 import {servicerMessages, visitorMessages} from '../api/chat'
 import {indexVisit} from '../api/visit'
@@ -10,25 +11,27 @@ Vue.use(Vuex);
 const state = {
     socket: {
         isConnected: false,
-        message: [],
         reconnectError: false,
     },
+    clientMessages: [],      // 访客端聊天消息
     token: getToken(),
-    activeChat: [],     // 活跃访客在线列表
-    visitor: null,      // 访客
+    activeVisitor: [],      // 活跃访客列表
+    visitor: null,          // 访客
     name: "",
     avatar: ""
 };
 
 const getters = {
-    // token() {
-    //     return state.token;
-    // },
     token: state => {
-        return state.token
+        return state.token;
     },
-    activeChat: state => {
-        return state.activeChat
+    // 筛选当前窗口的访客聊天信息
+    getFilterMessages: state => {
+        let visitor = state.activeVisitor.find(visitor => store.state.route.query.vid === visitor.visitor_id)
+        if (visitor) {
+            return visitor.messages
+        }
+        return []
     }
 };
 
@@ -63,11 +66,28 @@ const mutations = {
     SOCKET_ONERROR(state, event) {
         console.error(state, event)
     },
-    // default handler called for all methods
+    // 私聊消息
     SOCKET_ONMESSAGE(state, message) {
         console.log('SOCKET_ONMESSAGE', message)
-        // state.socket.message = message
-        state.socket.message.push(message)
+    },
+    // 设置访客端消息
+    CLIENT_ON_MESSAGE(state, data) {
+        console.log('CLIENT_ON_MESSAGE', data)
+        state.clientMessages.push(data.message)
+    },
+    // 设置客服端消息
+    SERVICE_ON_MESSAGE(state, data) {
+        console.log('SERVICE_ON_MESSAGE', data)
+        let message = data.message
+        // 指定访客消息
+        let index = state.activeVisitor.findIndex(visitor => message.visitor.visitor_id === visitor.visitor_id)
+        state.activeVisitor[index].messages.push(message)
+        // 设置未读数，当前窗口活跃未读不计数
+        if (store.state.route.query.vid !== message.visitor.visitor_id) {
+            state.activeVisitor[index].unread += 1
+        }
+        // 语音提醒
+        voice()
     },
     // mutations for reconnect methods
     SOCKET_RECONNECT(state, count) {
@@ -76,10 +96,18 @@ const mutations = {
     SOCKET_RECONNECT_ERROR(state) {
         state.socket.reconnectError = true;
     },
-    // 访客消息
-    SET_CLIENT_MESSAGE(state, message) {
-        console.info('SET_CLIENT_MESSAGE', message)
-        state.socket.message = message
+    // 访客端访客消息
+    SET_CLIENT_MESSAGES(state, messages) {
+        console.info('SET_CLIENT_MESSAGES', messages)
+        // 找到访客，设置其消息
+        state.clientMessages = messages
+    },
+    // 客服端访客消息
+    SET_SERVICE_MESSAGES(state, message) {
+        console.info('SET_SERVICE_MESSAGES', message)
+        // 找到访客，设置其消息
+        state.activeVisitor.find(visitor => visitor.visitor_id === store.state.route.query.vid).messages = message
+        state.activeVisitor.find(visitor => visitor.visitor_id === store.state.route.query.vid).unread = 0
     },
     SET_TOKEN: (state, token) => {
         setToken(token)
@@ -92,16 +120,17 @@ const mutations = {
         state.avatar = avatar
     },
     // 单个访客上线
-    SET_VISITOR: (state, visitor) => {
+    SET_VISITOR_ONLINE: (state, visitor) => {
         // 存储本地，并设置上线
         setVisitorId(visitor.visitor_id)
         state.visitor = visitor
-        state.activeChat.push(visitor)
-        console.log('====== End SET_VISITOR=======')
+        // 拉服务端访客列表
+        state.activeVisitor.unshift(visitor)
+        console.log('====== End SET_VISITOR_ONLINE=======')
     },
     // 设置活跃访客
     SET_ACTIVE_CHAT: (state, chat) => {
-        state.activeChat = chat
+        state.activeVisitor = chat
     }
 };
 
@@ -127,9 +156,9 @@ const actions = {
         Vue.prototype.$socket.sendObj(actions)
     },
     // 新访客上线
-    storeVisitor: function (context, message) {
-        console.log('SET_VISITOR ==>', message.data)
-        context.commit('SET_VISITOR', message.data)
+    visitorOnline: function (context, message) {
+        console.log('SET_VISITOR_ONLINE ==>', message.data)
+        context.commit('SET_VISITOR_ONLINE', message.data)
     },
     // 获取聊天内容
     getMessages: function (context) {
@@ -141,7 +170,7 @@ const actions = {
                 return new Promise((resole, reject) => {
                     visitorMessages({vid: getVisitorId(), app_uuid: store.state.route.query.app_uuid}).then(ret => {
                         const messages = ret.data.reverse()
-                        context.commit('SET_CLIENT_MESSAGE', messages)
+                        context.commit('SET_CLIENT_MESSAGES', messages)
                     }).catch()
                 })
             }
@@ -152,7 +181,7 @@ const actions = {
                     servicerMessages({vid: store.state.route.query.vid}).then(ret => {
                         console.log(ret)
                         const messages = ret.data.reverse()
-                        context.commit('SET_CLIENT_MESSAGE', messages)
+                        context.commit('SET_SERVICE_MESSAGES', messages)
                     }).catch()
                 })
             }

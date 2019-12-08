@@ -29,7 +29,7 @@ class ChatEventService extends EventService
     /**
      * 设置在线访客事件
      */
-    const SET_VISITOR = 'storeVisitor';
+    const ACTION_VISITOR_ONLINE = 'visitorOnline';
 
     public function init($server, $frame)
     {
@@ -87,7 +87,11 @@ class ChatEventService extends EventService
                     'name' => '访客 ' . (Visitor::where(['app_uuid' => $app->app_uuid])->count() + 1)
                 ]);
             }
-            $this->server->push($this->fd, $this->packMessage(self::SET_VISITOR, new VisitorResource($visitor)));
+            // 访客上线推给客服
+            $userFd = $this->redis->userFd($admin->id);
+            $this->server->push($userFd, $this->packActionMessage(self::ACTION_VISITOR_ONLINE, new VisitorResource($visitor)));
+            // 推给自己
+            $this->server->push($this->fd, $this->packActionMessage(self::ACTION_VISITOR_ONLINE, new VisitorResource($visitor)));
             return $this->redis->visitorFd($visitor->visitor_id, $this->fd);
 
         } else {
@@ -113,12 +117,12 @@ class ChatEventService extends EventService
             ]);
             // 发给自己
             dump('#visitorFd--->', $this->fd);
-            $this->server->push($this->fd, json_encode(new ChatResource($chat)));
+            $this->server->push($this->fd, $this->packMutationMessage(self::MUTATE_CLIENT_ON_MESSAGE, new ChatResource($chat)));
 
             // 发给客服
             $userFd = $this->redis->userFd($userId);
             dump('#userFd--->', $userFd);
-            $this->server->push($userFd, json_encode(new ChatResource($chat)));
+            $this->server->push($userFd, $this->packMutationMessage(self::MUTATE_SERVICE_ON_MESSAGE, new ChatResource($chat)));
 
         } catch (ApiException $e) {
             dump($e->getMessage());

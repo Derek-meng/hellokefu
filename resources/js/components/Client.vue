@@ -38,7 +38,7 @@
         },
         computed: {
             messages() {
-                return this.$store.state.socket.message
+                return this.$store.state.clientMessages
             }
         },
         created() {

@@ -19,6 +19,7 @@ import VueNativeSock from 'vue-native-websocket'
 import router from './router'
 import store from './store';
 import './utils/permission' // Auth
+import './utils/help'       // Help
 import '../sass/index.scss' // global css
 const unsync = sync(store, router) // done. Returns an unsync callback fn
 
@@ -32,7 +33,6 @@ Vue.use(VueNativeSock, 'ws://127.0.0.1:9502', {
     reconnection: true,         // (Boolean) whether to reconnect automatically (false)
     reconnectionAttempts: 5,    // (Number) number of reconnection attempts before giving up (Infinity),
     reconnectionDelay: 3000,    // (Number) how long to initially wait before attempting a new (1000)
-    // protocol: 'my-protocol'
     passToStoreHandler: function (eventName, event) {
         console.log('eventName',eventName)
         if (!eventName.startsWith('SOCKET_')) { return }
@@ -48,9 +48,6 @@ Vue.use(VueNativeSock, 'ws://127.0.0.1:9502', {
                 target = [msg.namespace || '', msg.action].filter((e) => !!e).join('/')
             }
         }
-        console.log('--- eventName ---')
-        console.log(method,target,msg)
-        console.log('=== eventName ===')
         this.store[method](target, msg)
     }
 })

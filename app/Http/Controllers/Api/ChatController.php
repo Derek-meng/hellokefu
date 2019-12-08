@@ -14,6 +14,7 @@ use App\Http\Requests\ChatRequest;
 use App\Http\Resources\ChatResource;
 use App\Models\Chat;
 use App\Models\Visitor;
+use Carbon\Carbon;
 
 class ChatController extends ApiController
 {
@@ -55,7 +56,9 @@ class ChatController extends ApiController
     {
         try {
             $visitorId = $request->input('vid');
-            return $this->success(ChatResource::collection(Chat::where(['visitor_id'=>$visitorId, 'user_id' => $this->user->id])->orderBy('id', SORT_DESC)->paginate($this->perPage)));
+            // 消息已读
+            Chat::where(['visitor_id' => $visitorId])->update(['received_at' => Carbon::now()]);
+            return $this->success(ChatResource::collection(Chat::where(['visitor_id' => $visitorId, 'user_id' => $this->user->id])->orderBy('id', SORT_DESC)->paginate($this->perPage)));
 
         } catch (ApiException $e) {
             return $this->error($e->getMessage());

@@ -45,9 +45,7 @@ class UserEventService extends EventService
         return $this->redis->userFd($this->userId, $this->fd);
     }
 
-    /**
-     *
-     */
+
     public function send()
     {
         // 入表
@@ -61,11 +59,11 @@ class UserEventService extends EventService
             'content' => $this->body['content']
         ]);
         // 通知自己
-        $this->server->push($this->fd, json_encode(new ChatResource($chat)));
+        $this->server->push($this->fd, $this->packMutationMessage(self::MUTATE_SERVICE_ON_MESSAGE, new ChatResource($chat)));
 
         // 通知访客
         $visitorFd = $this->redis->visitorFd($visitorId);
-        $this->server->push($visitorFd, json_encode(new ChatResource($chat)));
+        $this->server->push($visitorFd, $this->packMutationMessage(self::MUTATE_CLIENT_ON_MESSAGE, new ChatResource($chat)));
 
     }
 }

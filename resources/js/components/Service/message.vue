@@ -40,7 +40,9 @@
         },
         computed: {
             messages() {
-                return this.$store.state.socket.message
+                console.log('----message----')
+                console.log(this.$store.getters.getFilterMessages)
+                return this.$store.getters.getFilterMessages
             }
         },
         created() {
