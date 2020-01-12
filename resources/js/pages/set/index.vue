@@ -17,10 +17,8 @@
                     </el-col>
                     <el-col :span="8">
                         <span class="set-box">
-                            <a href="javascript:void(0);" @click="dialogVisible = true">
-                                <i class="el-icon-link"></i>
-                                <span class="set-name">聊天链接</span>
-                            </a>
+                            <i class="el-icon-link"></i>
+                            <router-link to="/deploy/chat">聊天链接</router-link>
                         </span>
                     </el-col>
                 </el-row>
@@ -74,18 +72,6 @@
                 </el-row>
             </el-card>
         </el-card>
-
-        <el-dialog
-                title="聊天链接"
-                :visible.sync="dialogVisible"
-                width="30%"
-                :before-close="handleClose">
-            <span>{{link}}</span>
-            <span slot="footer" class="dialog-footer">
-                <el-button @click="dialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
-            </span>
-        </el-dialog>
     </div>
 </template>
 
@@ -103,16 +89,9 @@
         },
         methods: {
             init(){
-                appInfo().then(ret => {
-                    this.link = 'http://chat.bingphp.com/#/client?app_uuid=' + ret.data.app_uuid
-                }).catch()
             },
-            handleClose(done) {
-                this.$confirm('确认关闭？')
-                    .then(_ => {
-                        done();
-                    })
-                    .catch(_ => {});
+            deployChat(){
+                this.$router.push('deploy/chat')
             }
         }
     };

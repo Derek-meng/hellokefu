@@ -22,11 +22,12 @@ import './utils/permission' // Auth
 import './utils/help'       // Help
 import '../sass/index.scss' // global css
 const unsync = sync(store, router) // done. Returns an unsync callback fn
-
+const config = require('./config.js')
 
 Vue.use(ElementUI);
 
-Vue.use(VueNativeSock, 'ws://127.0.0.1:9502', {
+console.log(config.host)
+Vue.use(VueNativeSock, config.ws, {
     // connectManually: true,
     store: store,
     format: 'json',

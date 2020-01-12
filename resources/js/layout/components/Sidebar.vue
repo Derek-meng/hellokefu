@@ -15,10 +15,10 @@
                     @close="handleClose"
                     :collapse-transition="false"
                     mode="vertical">
-                <el-menu-item index="1" route="/">
-                    <i class="el-icon-menu"></i>
-                    <span slot="title">主页</span>
-                </el-menu-item>
+                <!--<el-menu-item index="1" route="/">-->
+                    <!--<i class="el-icon-menu"></i>-->
+                    <!--<span slot="title">主页</span>-->
+                <!--</el-menu-item>-->
                 <el-menu-item index="3" route="service">
                     <i class="el-icon-service"></i>
                     <span slot="title">会话</span>

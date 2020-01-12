@@ -89,7 +89,7 @@
                 tableData: [],
                 meta: {
                     page: 1,
-                    size: 1,
+                    size: 15,
                     total: 0,
                 }
             }

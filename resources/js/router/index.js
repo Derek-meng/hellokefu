@@ -55,6 +55,13 @@ const routes = [
             name: 'set',
             meta: { title: '设置', icon: '' },
             component: Vue.component('set', require('../pages/set/index.vue').default),
+            children:[
+            ]
+        },{
+            path: '/deploy/chat',
+            name: 'deploy-chat',
+            meta: { title: '聊天链接', icon: '' },
+            component: Vue.component('set', require('../pages/set/deploy.vue').default),
 
         }]
     },
