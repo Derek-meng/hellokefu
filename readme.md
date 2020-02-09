@@ -3,9 +3,11 @@
 
 # Hello chat
 
+[中文文档](http://docs.hellokefu.com/)
+
 ## Usage
 ```
-git clone https://github.com/zph123/hellokefu <project-name>
+git clone https://github.com/dbing/hellokefu.git <project-name>
 ```
 ```
 cd <project-name>

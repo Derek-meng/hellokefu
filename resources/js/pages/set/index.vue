@@ -18,7 +18,7 @@
                     <el-col :span="8">
                         <span class="set-box">
                             <i class="el-icon-link"></i>
-                            <router-link to="/deploy/chat">聊天链接</router-link>
+                            <router-link to="deploy-chat"> 聊天链接</router-link>
                         </span>
                     </el-col>
                 </el-row>

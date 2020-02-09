@@ -22,6 +22,9 @@ const state = {
 };
 
 const getters = {
+    name: state => {
+        return state.name;
+    },
     token: state => {
         return state.token;
     },

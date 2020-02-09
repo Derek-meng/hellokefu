@@ -58,7 +58,7 @@ const routes = [
             children:[
             ]
         },{
-            path: '/deploy/chat',
+            path: 'deploy-chat',
             name: 'deploy-chat',
             meta: { title: '聊天链接', icon: '' },
             component: Vue.component('set', require('../pages/set/deploy.vue').default),
