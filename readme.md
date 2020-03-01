@@ -3,6 +3,12 @@
 
 # Hello chat
 
+## 效果图
+
+<p align="center"><img src="https://github.com/dbing/hellokefu/raw/master/public/screen/server.png"></p>
+<p align="center"><img src="https://github.com/dbing/hellokefu/raw/master/public/screen/client.png"></p>
+
+
 [中文文档](http://docs.hellokefu.com/)
 
 ## Usage
