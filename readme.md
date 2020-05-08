@@ -10,6 +10,8 @@
 
 
 [中文文档](http://docs.hellokefu.com/)
+[体验地址](http://demo.hellokefu.com/)
+
 
 ## Usage
 ```
